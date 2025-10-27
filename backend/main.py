@@ -67,8 +67,8 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    print("Health check endpoint called")
-    return {"status": "healthy"}
+    print("Health check endpoint called - OTP version")
+    return {"status": "healthy", "version": "otp-enabled"}
 
 if __name__ == "__main__":
     import uvicorn
