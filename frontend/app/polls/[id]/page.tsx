@@ -6,13 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { VoteButton } from '@/components/VoteButton';
-import { PollTrends } from '@/components/PollTrends';
 import { PollDashboardHeader } from '@/components/PollDashboardHeader';
-import { PollDashboardControls } from '@/components/PollDashboardControls';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { CommentsSection } from '@/components/CommentsSection';
 import { ShareButton } from '@/components/ShareButton';
-import { Bookmark, ArrowLeft, Trash2, Clock, TrendingUp } from 'lucide-react';
+import { Bookmark, ArrowLeft, Trash2, Clock } from 'lucide-react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuthStore } from '@/store/authStore';
 import { formatDistanceToNow, isPast, differenceInHours } from 'date-fns';
@@ -49,10 +47,6 @@ export default function PollDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { isConnected, lastMessage } = useWebSocket(pollId);
 
-  type Metric = 'percent' | 'count';
-  type Range = 'all' | '1d' | '1w' | '1m';
-  const [metric, setMetric] = useState<Metric>('percent');
-  const [range, setRange] = useState<Range>('all');
 
   useEffect(() => {
     fetchPoll();
@@ -277,15 +271,6 @@ export default function PollDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Controls + Trends */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="mb-4">
-            <PollDashboardControls metric={metric} onMetricChange={setMetric} range={range} onRangeChange={setRange} />
-          </div>
-          <PollTrends pollId={pollId} metric={metric} range={range} hideControls points={120} />
-        </CardContent>
-      </Card>
 
       {/* Comments Section */}
       <Card>
