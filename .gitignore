@@ -24,6 +24,7 @@ build/
 # Database
 *.db
 *.sqlite3
+*.sql
 
 # IDE
 .vscode/
@@ -42,4 +43,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Temporary files
+test_*.py
+fix_*.py
+*_data.sql
+*_temp.py
+
+# Deployment
 .vercel

@@ -1,3 +1,0 @@
--- Data for table bookmarks
-DELETE FROM bookmarks;
-INSERT INTO bookmarks VALUES (0b4e7b39-76a9-4251-8ea7-f86ef4695f22, d914b7b0-122d-4142-b5ad-978d871e4e21, dd817b8d-7a13-44e9-875e-323233b7fe45, NULL, 2025-10-27 06:54:41.594340+05:30);
