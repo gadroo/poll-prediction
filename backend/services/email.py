@@ -1,9 +1,16 @@
 import os
 import random
 import string
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
 from datetime import datetime, timezone, timedelta
+
+# Optional SendGrid import - only import if available
+try:
+    from sendgrid import SendGridAPIClient
+    from sendgrid.helpers.mail import Mail
+    SENDGRID_AVAILABLE = True
+except ImportError:
+    SENDGRID_AVAILABLE = False
+    print("WARNING: SendGrid not available. Email functionality will be disabled.")
 
 def generate_otp_code(length=6):
     """Generate a random OTP code"""
@@ -11,6 +18,11 @@ def generate_otp_code(length=6):
 
 def send_otp_email(email: str, otp_code: str, purpose: str = "password_reset"):
     """Send OTP code via email using SendGrid"""
+    
+    # Check if SendGrid is available
+    if not SENDGRID_AVAILABLE:
+        print(f"WARNING: SendGrid not available. OTP for {email}: {otp_code}")
+        return False
     
     # Get SendGrid API key from environment
     sendgrid_api_key = os.getenv("SENDGRID_API_KEY")
