@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { Check, TrendingUp } from 'lucide-react';
+import { getOptionColor } from '@/lib/colors';
 
 interface Option {
   id: string;
@@ -51,20 +52,8 @@ export function VoteButton({ options, totalVotes, userHasVoted, onVote, disabled
   const shouldShowResults = userHasVoted || viewResults || showResults;
 
   // Get color for each option based on index or text
-  const getOptionColor = (option: Option, index: number) => {
-    const text = option.text.toLowerCase();
-    
-    // Check for yes/no or similar keywords
-    if (text.includes('yes') || text.includes('agree') || text.includes('true')) {
-      return 'green';
-    }
-    if (text.includes('no') || text.includes('disagree') || text.includes('false')) {
-      return 'red';
-    }
-    
-    // Otherwise alternate colors based on index
-    const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
-    return colors[index % colors.length];
+  const getOptionColorForButton = (option: Option, index: number) => {
+    return getOptionColor(option.text, index);
   };
 
   return (
@@ -73,7 +62,8 @@ export function VoteButton({ options, totalVotes, userHasVoted, onVote, disabled
         const percentage = getPercentage(option.vote_count);
         const isSelected = selectedOption === option.id;
         const isLeading = option.vote_count > 0 && option.vote_count === maxVotes && totalVotes > 0;
-        const color = getOptionColor(option, index);
+        const colorConfig = getOptionColorForButton(option, index);
+        const color = colorConfig.name;
 
         // Color classes for backgrounds
         const colorClasses = {

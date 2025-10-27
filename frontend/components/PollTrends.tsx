@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import api from '@/lib/api';
 import { useWebSocket } from '@/hooks/useWebSocket';
+import { getOptionHexColor } from '@/lib/colors';
 
 type Series = { id: string; label: string; data: { x: any; y: number }[] };
 
@@ -157,27 +158,8 @@ export function PollTrends({ pollId, defaultMetric = 'percent', points = 120, me
 
   // Smart color assignment based on option names (green for yes, red for no)
   const chartColors = useMemo(() => {
-    return series.map((s) => {
-      const label = s.id.toLowerCase();
-      if (label.includes('yes') || label.includes('agree') || label.includes('true')) {
-        return '#22c55e'; // green-500
-      }
-      if (label.includes('no') || label.includes('disagree') || label.includes('false')) {
-        return '#ef4444'; // red-500
-      }
-      // Default color palette for other options
-      const colors = [
-        '#3b82f6', // blue-500
-        '#f59e0b', // amber-500
-        '#a855f7', // violet-500
-        '#06b6d4', // cyan-500
-        '#f97316', // orange-500
-        '#84cc16', // lime-500
-        '#ec4899', // pink-500
-        '#14b8a6', // teal-500
-      ];
-      const index = series.findIndex(ser => ser.id === s.id);
-      return colors[index % colors.length];
+    return series.map((s, index) => {
+      return getOptionHexColor(s.id, index);
     });
   }, [series]);
 

@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { getOptionTailwindBg } from '@/lib/colors';
 
 interface PollOption {
   id: string;
@@ -63,26 +64,7 @@ export function PollCard({ poll, context = 'default', onDelete }: PollCardProps)
 
   // Get color for each option based on index or text
   const getOptionColor = (text: string, index: number) => {
-    const lowerText = text.toLowerCase();
-    
-    // Check for yes/no or similar keywords
-    if (lowerText.includes('yes') || lowerText.includes('agree') || lowerText.includes('true')) {
-      return 'bg-green-500/70';
-    }
-    if (lowerText.includes('no') || lowerText.includes('disagree') || lowerText.includes('false')) {
-      return 'bg-red-500/70';
-    }
-    
-    // Otherwise alternate colors based on index
-    const colors = [
-      'bg-red-500/70',
-      'bg-green-500/70',
-      'bg-blue-500/70',
-      'bg-yellow-500/70',
-      'bg-purple-500/70',
-      'bg-orange-500/70'
-    ];
-    return colors[index % colors.length];
+    return getOptionTailwindBg(text, index);
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
