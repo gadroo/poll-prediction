@@ -113,7 +113,7 @@ export function ShareButton({ pollId, pollTitle, variant = 'outline', size = 'de
           <span>Share on LinkedIn</span>
         </DropdownMenuItem>
 
-        {typeof navigator !== 'undefined' && navigator.share && (
+        {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={shareNative} className="cursor-pointer gap-2">
