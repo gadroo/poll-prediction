@@ -20,8 +20,10 @@ class User(Base):
     # - bookmarks: CASCADE deleted (user's bookmarks are removed)
     # - votes: SET NULL (votes preserved as anonymous)
     # - comments: SET NULL (comments preserved as anonymous)
+    # - password_reset_tokens: CASCADE deleted (tokens are removed)
     polls = relationship("Poll", back_populates="creator")
     votes = relationship("Vote", back_populates="user")
     bookmarks = relationship("Bookmark", back_populates="user")
     comments = relationship("Comment", back_populates="user")
+    password_reset_tokens = relationship("PasswordResetToken", back_populates="user")
 
