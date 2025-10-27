@@ -20,6 +20,18 @@ class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str = Field(..., min_length=6)
 
+class OTPRequest(BaseModel):
+    email: EmailStr
+
+class OTPVerifyRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(..., min_length=6, max_length=6, pattern=r'^\d{6}$')
+
+class OTPResetPasswordRequest(BaseModel):
+    email: EmailStr
+    code: str = Field(..., min_length=6, max_length=6, pattern=r'^\d{6}$')
+    new_password: str = Field(..., min_length=6)
+
 class UserResponse(BaseModel):
     id: UUID
     email: str

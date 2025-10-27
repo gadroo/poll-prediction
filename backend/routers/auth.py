@@ -2,10 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from models import get_db, User, PasswordResetToken
-from schemas import UserCreate, UserLogin, Token, UserResponse, ForgotPasswordRequest, ResetPasswordRequest
+from models import get_db, User, PasswordResetToken, OTP
+from schemas import UserCreate, UserLogin, Token, UserResponse, ForgotPasswordRequest, ResetPasswordRequest, OTPRequest, OTPVerifyRequest, OTPResetPasswordRequest
 from auth.auth import verify_password, get_password_hash, create_access_token
 from auth.dependencies import get_current_user_required
+from services.email import generate_otp_code, send_otp_email
 
 router = APIRouter(prefix="/api/auth", tags=["authentication"])
 
@@ -130,59 +131,98 @@ async def delete_account(
             detail=f"Failed to delete account: {str(e)}"
         )
 
-@router.post("/forgot-password")
-async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
-    """Request password reset"""
+@router.post("/send-otp")
+async def send_otp(request: OTPRequest, db: Session = Depends(get_db)):
+    """Send OTP code for password reset"""
+    from datetime import datetime, timezone, timedelta
+    
     # Check if user exists
     user = db.query(User).filter(User.email == request.email).first()
     if not user:
         # Don't reveal if email exists or not for security
-        return {"message": "If the email exists, a password reset link has been sent"}
+        return {"message": "If the email exists, a verification code has been sent"}
     
-    # Generate reset token
-    import secrets
-    import uuid
-    from datetime import datetime, timezone, timedelta
+    # Generate OTP code
+    otp_code = generate_otp_code(6)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)  # OTP expires in 10 minutes
     
-    token = secrets.token_urlsafe(32)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)  # Token expires in 1 hour
+    # Invalidate any existing OTPs for this user and purpose
+    db.query(OTP).filter(
+        OTP.user_id == user.id,
+        OTP.purpose == "password_reset"
+    ).delete()
     
-    # Invalidate any existing tokens for this user
-    db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user.id).delete()
-    
-    # Create new reset token
-    reset_token = PasswordResetToken(
+    # Create new OTP
+    otp = OTP(
         user_id=user.id,
-        token=token,
+        email=request.email,
+        code=otp_code,
+        purpose="password_reset",
         expires_at=expires_at
     )
     
-    db.add(reset_token)
+    db.add(otp)
     db.commit()
     
-    # In a real application, you would send an email here
-    # For now, we'll just return the token for testing
-    # In production, you should log this and send via email
-    print(f"Password reset token for {user.email}: {token}")
+    # Send OTP via email
+    email_sent = send_otp_email(request.email, otp_code, "password_reset")
     
-    return {"message": "If the email exists, a password reset link has been sent"}
+    if not email_sent:
+        # If email fails, still return success message for security
+        print(f"OTP for {request.email}: {otp_code}")
+    
+    return {"message": "If the email exists, a verification code has been sent"}
 
-@router.post("/reset-password")
-async def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
-    """Reset password using token"""
-    # Find the reset token
-    reset_token = db.query(PasswordResetToken).filter(
-        PasswordResetToken.token == request.token
+@router.post("/verify-otp")
+async def verify_otp(request: OTPVerifyRequest, db: Session = Depends(get_db)):
+    """Verify OTP code"""
+    # Find the OTP
+    otp = db.query(OTP).filter(
+        OTP.email == request.email,
+        OTP.code == request.code,
+        OTP.purpose == "password_reset"
     ).first()
     
-    if not reset_token or not reset_token.is_valid():
+    if not otp or not otp.is_valid():
+        # Increment attempts if OTP exists but is invalid
+        if otp:
+            max_attempts_reached = otp.increment_attempts()
+            db.commit()
+            if max_attempts_reached:
+                return {"message": "Too many failed attempts. Please request a new code.", "valid": False}
+        
+        return {"message": "Invalid or expired verification code", "valid": False}
+    
+    return {"message": "Verification code is valid", "valid": True}
+
+@router.post("/reset-password-otp")
+async def reset_password_otp(request: OTPResetPasswordRequest, db: Session = Depends(get_db)):
+    """Reset password using OTP code"""
+    # Find the OTP
+    otp = db.query(OTP).filter(
+        OTP.email == request.email,
+        OTP.code == request.code,
+        OTP.purpose == "password_reset"
+    ).first()
+    
+    if not otp or not otp.is_valid():
+        # Increment attempts if OTP exists but is invalid
+        if otp:
+            max_attempts_reached = otp.increment_attempts()
+            db.commit()
+            if max_attempts_reached:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Too many failed attempts. Please request a new code."
+                )
+        
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired reset token"
+            detail="Invalid or expired verification code"
         )
     
     # Get the user
-    user = db.query(User).filter(User.id == reset_token.user_id).first()
+    user = db.query(User).filter(User.id == otp.user_id).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -192,8 +232,8 @@ async def reset_password(request: ResetPasswordRequest, db: Session = Depends(ge
     # Update password
     user.hashed_password = get_password_hash(request.new_password)
     
-    # Mark token as used
-    reset_token.used = True
+    # Mark OTP as used
+    otp.used = True
     
     db.commit()
     

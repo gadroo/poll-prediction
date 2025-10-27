@@ -26,4 +26,5 @@ class User(Base):
     bookmarks = relationship("Bookmark", back_populates="user")
     comments = relationship("Comment", back_populates="user")
     password_reset_tokens = relationship("PasswordResetToken", back_populates="user")
+    otps = relationship("OTP", back_populates="user")
 

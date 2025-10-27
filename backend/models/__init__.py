@@ -7,6 +7,7 @@ from .like import Bookmark, Like
 from .tag import Tag, poll_tags
 from .comment import Comment
 from .password_reset import PasswordResetToken
+from .otp import OTP
 
-__all__ = ["Base", "get_db", "init_db", "User", "Poll", "Option", "Vote", "Bookmark", "Like", "Tag", "poll_tags", "Comment", "PasswordResetToken"]
+__all__ = ["Base", "get_db", "init_db", "User", "Poll", "Option", "Vote", "Bookmark", "Like", "Tag", "poll_tags", "Comment", "PasswordResetToken", "OTP"]
 

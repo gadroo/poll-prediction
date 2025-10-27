@@ -24,11 +24,11 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      await api.post('/api/auth/forgot-password', { email });
+      await api.post('/api/auth/send-otp', { email });
       setIsSubmitted(true);
-      toast.success('Password reset instructions sent to your email');
+      toast.success('Verification code sent to your email');
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Failed to send reset email');
+      toast.error(error.response?.data?.detail || 'Failed to send verification code');
     } finally {
       setIsLoading(false);
     }
@@ -38,36 +38,36 @@ export default function ForgotPasswordPage() {
     return (
       <div className="max-w-md mx-auto mt-12">
         <Card>
-          <CardHeader>
-            <CardTitle>Check your email</CardTitle>
-            <CardDescription>
-              We've sent password reset instructions to {email}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                If you don't see the email, check your spam folder or try again.
-              </p>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setIsSubmitted(false);
-                    setEmail('');
-                  }}
-                  className="flex-1"
-                >
-                  Try again
+        <CardHeader>
+          <CardTitle>Check your email</CardTitle>
+          <CardDescription>
+            We've sent a 6-digit verification code to {email}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Enter the code below to reset your password. The code expires in 10 minutes.
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setIsSubmitted(false);
+                  setEmail('');
+                }}
+                className="flex-1"
+              >
+                Try again
+              </Button>
+              <Link href={`/verify-otp?email=${encodeURIComponent(email)}`} className="flex-1">
+                <Button className="w-full">
+                  Enter code
                 </Button>
-                <Link href="/login" className="flex-1">
-                  <Button variant="outline" className="w-full">
-                    Back to login
-                  </Button>
-                </Link>
-              </div>
+              </Link>
             </div>
-          </CardContent>
+          </div>
+        </CardContent>
         </Card>
       </div>
     );
