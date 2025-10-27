@@ -2,10 +2,13 @@
 nixPkgs = ["python39"]
 
 [phases.install]
-cmds = ["cd backend && python -m ensurepip --upgrade && python -m pip install -r requirements.txt"]
+cmds = [
+  "cd backend && python -m venv /opt/venv",
+  "cd backend && /opt/venv/bin/pip install -r requirements.txt"
+]
 
 [phases.build]
 cmds = ["echo 'Build complete'"]
 
 [start]
-cmd = "cd backend && python -c \"import sys; sys.path.append('.'); from main import app; import uvicorn; uvicorn.run(app, host='0.0.0.0', port=int('$PORT'))\""
+cmd = "cd backend && /opt/venv/bin/python -c \"import sys; sys.path.append('.'); from main import app; import uvicorn; uvicorn.run(app, host='0.0.0.0', port=int('$PORT'))\""
