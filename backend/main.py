@@ -15,7 +15,13 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Initialize database
-    init_db()
+    try:
+        print("Starting database initialization...")
+        init_db()
+        print("Database initialization completed successfully")
+    except Exception as e:
+        print(f"Database initialization failed: {e}")
+        print("Continuing without database...")
     yield
     # Shutdown: cleanup if needed
 
@@ -50,6 +56,7 @@ app.include_router(ws_handler.router)
 
 @app.get("/")
 async def root():
+    print("Root endpoint called")
     return {
         "message": "QuickPoll API",
         "version": "1.0.0",
@@ -58,6 +65,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
+    print("Health check endpoint called")
     return {"status": "healthy"}
 
 if __name__ == "__main__":
