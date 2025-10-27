@@ -58,11 +58,12 @@ app.include_router(ws_handler.router)
 
 @app.get("/")
 async def root():
-    print("Root endpoint called")
+    print("Root endpoint called - OTP version")
     return {
         "message": "QuickPoll API",
         "version": "1.0.0",
-        "docs": "/docs"
+        "docs": "/docs",
+        "features": ["otp-password-reset"]
     }
 
 @app.get("/health")
