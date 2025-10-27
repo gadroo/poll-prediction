@@ -3,32 +3,31 @@ import random
 import string
 from datetime import datetime, timezone, timedelta
 
-# Optional SendGrid import - only import if available
+# Optional Resend import - only import if available
 try:
-    from sendgrid import SendGridAPIClient
-    from sendgrid.helpers.mail import Mail
-    SENDGRID_AVAILABLE = True
+    import resend
+    RESEND_AVAILABLE = True
 except ImportError:
-    SENDGRID_AVAILABLE = False
-    print("WARNING: SendGrid not available. Email functionality will be disabled.")
+    RESEND_AVAILABLE = False
+    print("WARNING: Resend not available. Email functionality will be disabled.")
 
 def generate_otp_code(length=6):
     """Generate a random OTP code"""
     return ''.join(random.choices(string.digits, k=length))
 
 def send_otp_email(email: str, otp_code: str, purpose: str = "password_reset"):
-    """Send OTP code via email using SendGrid"""
+    """Send OTP code via email using Resend"""
     
-    # Check if SendGrid is available
-    if not SENDGRID_AVAILABLE:
-        print(f"WARNING: SendGrid not available. OTP for {email}: {otp_code}")
+    # Check if Resend is available
+    if not RESEND_AVAILABLE:
+        print(f"WARNING: Resend not available. OTP for {email}: {otp_code}")
         return False
     
-    # Get SendGrid API key from environment
-    sendgrid_api_key = os.getenv("SENDGRID_API_KEY")
+    # Get Resend API key from environment
+    resend_api_key = os.getenv("RESEND_API_KEY")
     
-    if not sendgrid_api_key:
-        print(f"WARNING: SENDGRID_API_KEY not set. OTP for {email}: {otp_code}")
+    if not resend_api_key:
+        print(f"WARNING: RESEND_API_KEY not set. OTP for {email}: {otp_code}")
         return False
     
     # Create email content based on purpose
@@ -131,20 +130,19 @@ def send_otp_email(email: str, otp_code: str, purpose: str = "password_reset"):
         """
     
     try:
-        # Create SendGrid message
-        message = Mail(
-            from_email="noreply@quickpoll.app",  # This should be a verified sender
-            to_emails=email,
-            subject=subject,
-            html_content=html_content,
-            plain_text_content=text_content
-        )
+        # Set Resend API key
+        resend.api_key = resend_api_key
         
-        # Send email
-        sg = SendGridAPIClient(api_key=sendgrid_api_key)
-        response = sg.send(message)
+        # Send email using Resend
+        response = resend.Emails.send({
+            "from": "QuickPoll <noreply@quickpoll.app>",
+            "to": [email],
+            "subject": subject,
+            "html": html_content,
+            "text": text_content
+        })
         
-        print(f"OTP email sent to {email}: {response.status_code}")
+        print(f"OTP email sent to {email}: {response}")
         return True
         
     except Exception as e:
