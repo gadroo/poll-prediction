@@ -51,6 +51,34 @@ export const POLL_OPTION_COLORS: ColorConfig[] = [
     tailwind: 'orange-500',
     tailwindBg: 'bg-orange-500/70',
     tailwindBorder: 'border-orange-500/30'
+  },
+  {
+    name: 'pink',
+    hex: '#ec4899',
+    tailwind: 'pink-500',
+    tailwindBg: 'bg-pink-500/70',
+    tailwindBorder: 'border-pink-500/30'
+  },
+  {
+    name: 'cyan',
+    hex: '#06b6d4',
+    tailwind: 'cyan-500',
+    tailwindBg: 'bg-cyan-500/70',
+    tailwindBorder: 'border-cyan-500/30'
+  },
+  {
+    name: 'lime',
+    hex: '#84cc16',
+    tailwind: 'lime-500',
+    tailwindBg: 'bg-lime-500/70',
+    tailwindBorder: 'border-lime-500/30'
+  },
+  {
+    name: 'teal',
+    hex: '#14b8a6',
+    tailwind: 'teal-500',
+    tailwindBg: 'bg-teal-500/70',
+    tailwindBorder: 'border-teal-500/30'
   }
 ];
 
@@ -66,8 +94,9 @@ export function getOptionColor(text: string, index: number): ColorConfig {
     return POLL_OPTION_COLORS[0]; // red
   }
   
-  // Otherwise use index-based assignment
-  return POLL_OPTION_COLORS[index % POLL_OPTION_COLORS.length];
+  // Otherwise use index-based assignment (no cycling needed - we have exactly 10 colors)
+  // Safety check: if index is out of bounds, use the last color
+  return POLL_OPTION_COLORS[Math.min(index, POLL_OPTION_COLORS.length - 1)];
 }
 
 // Get just the hex color for charts
