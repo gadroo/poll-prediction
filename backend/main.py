@@ -22,7 +22,9 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"Database initialization failed: {e}")
         print("Continuing without database...")
+    
     yield
+    
     # Shutdown: cleanup if needed
 
 app = FastAPI(
@@ -39,7 +41,11 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Update with specific origins in production
+    allow_origins=[
+        "http://localhost:3000",  # Local development
+        "https://*.vercel.app",   # Vercel deployments
+        "https://poll-prediction.vercel.app",  # Your specific Vercel domain
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
