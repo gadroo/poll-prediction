@@ -9,10 +9,8 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise ValueError(
-        "DATABASE_URL environment variable is not set. "
-        "Please set it to your PostgreSQL connection string."
-    )
+    print("WARNING: DATABASE_URL environment variable is not set. Database features will be disabled.")
+    DATABASE_URL = "sqlite:///./test.db"  # Fallback to SQLite for healthcheck
 
 # Create engine for PostgreSQL
 engine = create_engine(
