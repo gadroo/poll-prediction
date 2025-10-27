@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python -c \"import sys; sys.path.append('backend'); from backend.main import app; import uvicorn; uvicorn.run(app, host='0.0.0.0', port=int('$PORT'))\"",
+    "startCommand": "cd backend && python -c \"import sys; sys.path.append('.'); from main import app; import uvicorn; uvicorn.run(app, host='0.0.0.0', port=int('$PORT'))\"",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 120,
     "restartPolicyType": "ON_FAILURE",
