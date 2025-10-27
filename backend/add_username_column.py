@@ -6,7 +6,7 @@ import string
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://quickpoll_user:quickpoll_pass@localhost/quickpoll")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 def generate_username(email: str, existing_usernames: set) -> str:
     """Generate a unique username from email"""
