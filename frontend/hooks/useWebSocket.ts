@@ -66,6 +66,12 @@ export function useWebSocket(pollId: string | null): UseWebSocketReturn {
       return;
     }
 
+    // Check if WebSocket URL is available
+    if (!WS_URL || WS_URL === 'ws://localhost:8000') {
+      console.warn('useWebSocket: WebSocket URL not configured, skipping connection');
+      return;
+    }
+
     isConnectingRef.current = true;
     const wsUrl = `${WS_URL}/ws/${pollId}`;
     console.log('useWebSocket: Attempting to connect to:', wsUrl);
@@ -97,9 +103,10 @@ export function useWebSocket(pollId: string | null): UseWebSocketReturn {
         }
       };
       
-      ws.onerror = () => {
-        // Error will be handled in onclose
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
         isConnectingRef.current = false;
+        setIsConnected(false);
       };
       
       ws.onclose = (event) => {
@@ -115,15 +122,19 @@ export function useWebSocket(pollId: string | null): UseWebSocketReturn {
         
         // Only attempt reconnection if this is an unexpected closure
         // Code 1000 = normal closure, 1001 = going away (page unload)
-        if (event.code !== 1000 && event.code !== 1001 && reconnectAttemptsRef.current < 5) {
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
-          console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/5)...`);
+        if (event.code !== 1000 && event.code !== 1001 && reconnectAttemptsRef.current < 3) {
+          const delay = Math.min(2000 * Math.pow(2, reconnectAttemptsRef.current), 15000);
+          console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/3)...`);
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++;
             connect();
           }, delay);
-        } else if (reconnectAttemptsRef.current >= 5) {
-          console.error('Max reconnection attempts reached.');
+        } else if (reconnectAttemptsRef.current >= 3) {
+          console.warn('Max reconnection attempts reached. WebSocket will not auto-reconnect.');
+          // Reset attempts after 30 seconds to allow manual reconnection
+          setTimeout(() => {
+            reconnectAttemptsRef.current = 0;
+          }, 30000);
         }
       };
       
