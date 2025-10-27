@@ -33,7 +33,20 @@ export default function LoginPage() {
       toast.success('Logged in successfully!');
       router.push('/');
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Login failed');
+      const errorMessage = error.response?.data?.detail || 'Login failed';
+      toast.error(errorMessage);
+      
+      // If user doesn't exist, show a helpful message with sign up link
+      if (errorMessage.includes('No account found')) {
+        setTimeout(() => {
+          toast.info('Need an account? Sign up here!', {
+            action: {
+              label: 'Sign Up',
+              onClick: () => router.push('/register')
+            }
+          });
+        }, 2000);
+      }
     } finally {
       setIsLoading(false);
     }

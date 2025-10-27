@@ -67,10 +67,19 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     """Login user"""
     # Find user
     user = db.query(User).filter(User.email == user_data.email).first()
-    if not user or not verify_password(user_data.password, user.hashed_password):
+    
+    if not user:
+        # User doesn't exist - suggest sign up
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password"
+            detail="No account found with this email. Please sign up first."
+        )
+    
+    if not verify_password(user_data.password, user.hashed_password):
+        # User exists but wrong password
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password"
         )
     
     # Create access token
